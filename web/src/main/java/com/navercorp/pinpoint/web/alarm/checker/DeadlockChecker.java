@@ -57,10 +57,12 @@ public class DeadlockChecker extends AgentChecker<Boolean> {
     }
 
     @Override
-    public String getEmailMessage() {
+    public String getEmailMessage(String INSPECTOR_LINK_FORMAT, String pinpointUrl, String currentTime) {
         StringBuilder message = new StringBuilder();
         for (Map.Entry<String, Boolean> detected : detectedAgents.entrySet()) {
             message.append(String.format(" Value of agent(%s) has deadlocked thread during the past 5 mins.", detected.getKey()));
+            message.append("<br>");
+            message.append(String.format(INSPECTOR_LINK_FORMAT, pinpointUrl, rule.getApplicationId(), rule.getServiceType(), currentTime, detected.getKey(), detected.getKey()));
             message.append("<br>");
         }
         return message.toString();

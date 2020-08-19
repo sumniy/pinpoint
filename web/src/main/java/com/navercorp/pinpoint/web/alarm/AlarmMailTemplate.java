@@ -16,8 +16,10 @@
 
 package com.navercorp.pinpoint.web.alarm;
 
+import com.navercorp.pinpoint.web.alarm.checker.AgentChecker;
 import com.navercorp.pinpoint.web.alarm.checker.AlarmChecker;
 import com.navercorp.pinpoint.web.alarm.vo.Rule;
+import java.text.SimpleDateFormat;
 
 /**
  * @author minwoo.jung
@@ -25,7 +27,9 @@ import com.navercorp.pinpoint.web.alarm.vo.Rule;
 public class AlarmMailTemplate {
 
     private static final String LINE_FEED = "<br>";
-    private static final String LINK_FORMAT = "<a href=\"%s\" >%s</a>";
+    private static final String LINK_FORMAT = "<a href=\"%s\" >pinpoint site</a>";
+    private static final String SCATTER_CHART_LINK_FORMAT = "<a href=\"%s/main/%s@%s/5m/%s\" >scatter chart link to %s</a>";
+    private static final String INSPECTOR_LINK_FORMAT = "<a href=\"%s/inspector/%s@%s/5m/%s/%s\" >inspector link to %s</a>";
 
     private final String pinpointUrl;
     private final AlarmChecker checker;
@@ -44,8 +48,14 @@ public class AlarmMailTemplate {
         return String.format("[PINPOINT-" + batchEnv + "] %s Alarm for %s Service. #%d", rule.getCheckerName(), rule.getApplicationId(), sequenceCount);
     }
 
+    public String getCurrentTime() {
+        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
+        return format.format(System.currentTimeMillis());
+    }
+
     public String createBody() {
         Rule rule = checker.getRule();
+        String currentTime = getCurrentTime();
 
         StringBuilder body = new StringBuilder();
         body.append("<strong>").append(createSubject()).append("</strong>");
@@ -53,9 +63,17 @@ public class AlarmMailTemplate {
         body.append(LINE_FEED);
         body.append(String.format("Rule : %s", rule.getCheckerName()));
         body.append(LINE_FEED);
-        body.append(checker.getEmailMessage());
-        body.append(String.format(LINK_FORMAT, pinpointUrl, pinpointUrl));
-        
+        if(checker instanceof AgentChecker) {
+            AgentChecker agentChecker = (AgentChecker)checker;
+            body.append(agentChecker.getEmailMessage(INSPECTOR_LINK_FORMAT, pinpointUrl, currentTime));
+        } else {
+            body.append(checker.getEmailMessage());
+        }
+        body.append(LINE_FEED);
+        body.append(String.format(LINK_FORMAT, pinpointUrl));
+        body.append(LINE_FEED);
+        body.append(String.format(SCATTER_CHART_LINK_FORMAT, pinpointUrl, rule.getApplicationId(), rule.getServiceType(), currentTime, rule.getApplicationId()));
+
         return body.toString();
     }
 }

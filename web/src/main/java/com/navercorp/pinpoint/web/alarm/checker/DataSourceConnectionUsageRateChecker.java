@@ -72,7 +72,7 @@ public class DataSourceConnectionUsageRateChecker extends AgentChecker<List<Data
     }
 
     @Override
-    public String getEmailMessage() {
+    public String getEmailMessage(String INSPECTOR_LINK_FORMAT, String pinpointUrl, String currentTime) {
         StringBuilder message = new StringBuilder();
         for (Map.Entry<String, List<DataSourceAlarmVO>> detected : detectedAgents.entrySet()) {
             for (DataSourceAlarmVO dataSourceAlarmVO : detected.getValue()) {
@@ -81,6 +81,8 @@ public class DataSourceConnectionUsageRateChecker extends AgentChecker<List<Data
                     message.append("<br>");
                 }
             }
+            message.append(String.format(INSPECTOR_LINK_FORMAT, pinpointUrl, rule.getApplicationId(), rule.getServiceType(), currentTime, detected.getKey(), detected.getKey()));
+            message.append("<br>");
 
         }
         return message.toString();

@@ -29,7 +29,7 @@ import java.util.Map.Entry;
  * @author minwoo.jung
  */
 public abstract class AgentChecker<T> extends AlarmChecker<T> {
-    
+
     protected final Map<String, T> detectedAgents = new HashMap<>();
 
     protected AgentChecker(Rule rule, String unit, DataCollector dataCollector) {
@@ -66,19 +66,19 @@ public abstract class AgentChecker<T> extends AlarmChecker<T> {
         
         return messages;
     }
-    
-    @Override
-    public String getEmailMessage() {
+
+    public String getEmailMessage(String INSPECTOR_LINK_FORMAT, String pinpointUrl, String currentTime) {
         StringBuilder message = new StringBuilder();
         
         for (Entry<String, T> detected : detectedAgents.entrySet()) {
             message.append(String.format(" Value of agent(%s) is %s%s during the past 5 mins.(Threshold : %s%s)", detected.getKey(), detected.getValue(), unit, rule.getThreshold(), unit));
             message.append("<br>");
+            message.append(String.format(INSPECTOR_LINK_FORMAT, pinpointUrl, rule.getApplicationId(), rule.getServiceType(), currentTime, detected.getKey(), detected.getKey()));
+            message.append("<br>");
         }
         
         return message.toString();
     }
-    
+
     protected abstract Map<String, T> getAgentValues();
-    
 }
